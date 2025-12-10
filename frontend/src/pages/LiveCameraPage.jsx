@@ -1,48 +1,42 @@
-import { useState, useEffect } from "react";
-import { API } from "../api/backend";
-import { TextField, MenuItem } from "@mui/material";
+import { useEffect, useState } from "react";
 
 export default function LiveCameraPage() {
-  const [cameras, setCameras] = useState([]);
-  const [cameraId, setCameraId] = useState("");
-  const [cameraUrl, setCameraUrl] = useState("");
+  const [image, setImage] = useState("");
 
   useEffect(() => {
-    API.get("/cameras").then(res => setCameras(res.data));
-  }, []);
+    const ws = new WebSocket("ws://localhost:8081");
 
-  const selectCamera = (id) => {
-    setCameraId(id);
-    const cam = cameras.find(c => c.id === id);
-    setCameraUrl(cam.rtspUrl);
-  };
+    ws.onopen = () => {
+      console.log("🔵 React WebSocket Connected");
+    };
+
+    ws.onerror = (err) => {
+      console.log("🔴 WebSocket Error:", err);
+    };
+
+    ws.onclose = () => {
+      console.log("🟠 WebSocket Closed");
+    };
+
+    ws.onmessage = (msg) => {
+      console.log("🟢 React received frame:", msg.data.length);
+      setImage("data:image/jpeg;base64," + msg.data);
+    };
+
+    return () => ws.close();
+  }, []);
 
   return (
     <div>
-      <h2>Live Camera Stream</h2>
-
-      <TextField
-        select
-        label="Select Camera"
-        value={cameraId}
-        onChange={(e) => selectCamera(e.target.value)}
-        style={{ width: 300, marginBottom: 20 }}
-      >
-        {cameras.map(camera => (
-          <MenuItem key={camera.id} value={camera.id}>
-            {camera.cameraName}
-          </MenuItem>
-        ))}
-      </TextField>
-
-      <br />
-
-      {cameraUrl && (
-        <img 
-          src={cameraUrl} 
-          alt="Live Stream" 
-          style={{ width: "640px", border: "2px solid black" }} 
+      <h2>Live YOLO Detection Stream</h2>
+      {image ? (
+        <img
+          src={image}
+          alt="YOLO Stream"
+          style={{ width: "720px", border: "2px solid black" }}
         />
+      ) : (
+        <p>Waiting for frames...</p>
       )}
     </div>
   );
