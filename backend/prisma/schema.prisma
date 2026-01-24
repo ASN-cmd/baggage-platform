@@ -43,12 +43,13 @@ model Camera {
 
 model Zone {
   id        Int      @id @default(autoincrement())
-  cameraId  Int
+  cameraId  Int?
+  streamId  String?
   zoneName  String
   coordinates Json
   createdAt DateTime @default(now())
 
-  camera   Camera @relation(fields: [cameraId], references: [id])
+  camera   Camera? @relation(fields: [cameraId], references: [id])
 }
 
 model Video {
@@ -86,4 +87,11 @@ model AutoAnnotation {
   createdAt      DateTime @default(now())
 
   frame SampledFrame @relation(fields: [sampledFrameId], references: [id])
+}
+
+model Stream {
+  id        String   @id @default(uuid())
+  source    String   // RTSP URL or File Path
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
 }

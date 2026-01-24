@@ -9,6 +9,7 @@ import DashboardHostPage from "./pages/DashboardHostPage";
 import SingleFeedDashboard from "./pages/SingleFeedDashboard";
 import AutoAnnotationPage from "./pages/AutoAnnotationPage";
 import SettingsPage from "./pages/SettingsPage";
+import ZoneEditorPage from "./pages/ZoneEditorPage";
 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardHostPage />} />
           <Route path="/dashboard/:streamId" element={<SingleFeedDashboard />} />
           <Route path="/auto-annotation" element={<AutoAnnotationPage />} />
+          <Route path="/zone-editor" element={<ZoneEditorPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </SidebarLayout>

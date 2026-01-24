@@ -8,6 +8,7 @@ import projectRoutes from "./routes/projects.js";
 import cameraRoutes from "./routes/cameras.js";
 import streamRoutes from "./routes/streams.js";
 import annotationRoutes from "./routes/annotation.js";
+import zoneRoutes from "./routes/zones.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -23,6 +24,7 @@ app.use("/projects", projectRoutes);
 app.use("/cameras", cameraRoutes);
 app.use("/streams", streamRoutes);
 app.use("/api/annotation", annotationRoutes);
+app.use("/zones", zoneRoutes);
 
 // SERVE STATIC FILES
 const __filename = fileURLToPath(import.meta.url);

@@ -12,6 +12,7 @@ const SingleFeedDashboard = () => {
     const { streamId } = useParams();
     const [imageSrc, setImageSrc] = useState(null);
     const [currentCount, setCurrentCount] = useState(0);
+    const [zoneCounts, setZoneCounts] = useState({});
     const [status, setStatus] = useState("connecting");
     const [fps, setFps] = useState(0);
     const [historicalData, setHistoricalData] = useState([]);
@@ -43,10 +44,33 @@ const SingleFeedDashboard = () => {
 
         ws.current.onmessage = (event) => {
             try {
+                console.log("🟢 Frame received, len:", event.data.length);
                 const data = JSON.parse(event.data);
+
                 if (data.streamId === streamId) {
-                    setImageSrc(`data:image/jpeg;base64,${data.image}`);
+                    if (!data.image) {
+                        console.warn("Frame has no image data");
+                        return;
+                    }
+
+                    console.log("Image type:", typeof data.image);
+                    if (typeof data.image === 'string') {
+                        console.log("Image start:", data.image.substring(0, 20));
+                        if (data.image.trim().startsWith('{')) {
+                            console.error("CRITICAL ERROR: data.image contains JSON!", data.image.substring(0, 100));
+                            return;
+                        }
+                    } else {
+                        console.error("data.image is NOT a string:", data.image);
+                        return;
+                    }
+
+                    const imageUrl = `data:image/jpeg;base64,${data.image}`;
+                    setImageSrc(imageUrl);
                     setCurrentCount(data.count || 0);
+                    if (data.zone_counts) {
+                        setZoneCounts(data.zone_counts);
+                    }
 
                     // FPS Calc
                     const now = Date.now();
@@ -113,6 +137,11 @@ const SingleFeedDashboard = () => {
                                 <button className="icon-btn-sm">
                                     <Settings size={16} />
                                 </button>
+                                <Link to={`/zone-editor?cameraId=${streamId}`} style={{ marginLeft: 8 }}>
+                                    <button className="icon-btn-sm" title="Edit Zones">
+                                        Edit Zones
+                                    </button>
+                                </Link>
                             </div>
                         </div>
 
@@ -196,8 +225,20 @@ const SingleFeedDashboard = () => {
                                 <span className="badge badge-normal">Live</span>
                             </div>
                             <div className="metric-value">{currentCount}</div>
-                            <div className="metric-subtext">Items detected</div>
+                            <div className="metric-subtext">Items visible</div>
                         </div>
+
+                        {/* Zone Counts */}
+                        {Object.entries(zoneCounts).map(([zoneName, count]) => (
+                            <div key={zoneName} className="metric-card animate-slideIn">
+                                <div className="metric-header">
+                                    <span className="metric-label">Zone: {zoneName}</span>
+                                    <span className="badge badge-live">Count</span>
+                                </div>
+                                <div className="metric-value">{count}</div>
+                                <div className="metric-subtext">Total Entered</div>
+                            </div>
+                        ))}
 
                         {/* Stream Status Card */}
                         <div className="metric-card animate-slideIn" style={{ animationDelay: '0.1s' }}>

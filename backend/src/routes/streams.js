@@ -6,9 +6,10 @@ const router = express.Router();
 
 // Start a new stream (Spawns Python Process)
 router.post("/start", (req, res) => {
-  let { source, existingStreamId } = req.body;
+  let { source, existingStreamId, restart } = req.body;
 
-  if (!source) {
+  // Check for source, unless we are restarting (engine handles source lookup)
+  if (!source && !restart) {
     return res.status(400).json({ error: "Source is required (RTSP URL or File Path)" });
   }
 
@@ -21,7 +22,8 @@ router.post("/start", (req, res) => {
   // Use existing ID if provided (restarting a stream), or generate new
   const streamId = existingStreamId || uuidv4();
 
-  startStream(streamId, source);
+  // Pass restart flag to engine
+  startStream(streamId, source, restart);
 
   res.json({ success: true, streamId, message: "Stream started" });
 });
